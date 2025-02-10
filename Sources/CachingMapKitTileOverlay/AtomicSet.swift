@@ -5,7 +5,6 @@ public class AtomicSet<Value: Hashable>: CustomDebugStringConvertible {
 
     private let queue = DispatchQueue(label: "com.donnywals.\(UUID().uuidString)",
                                       qos: .utility,
-                                      attributes: .concurrent,
                                       autoreleaseFrequency: .inherit,
                                       target: .global())
 

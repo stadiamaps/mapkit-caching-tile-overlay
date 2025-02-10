@@ -88,7 +88,13 @@ extension ViewController: MKMapViewDelegate {
 }
 ```
 
+
 ## Topics
 
 - ``CachingTileOverlay``
 - ``CachingTileOverlayRenderer``
+
+## See also
+
+The [Stadia Maps MapKit Raster Overlay](https://github.com/stadiamaps/mapkit-layers) package
+includes a full integration with Stadia Maps' styles.
