@@ -6,7 +6,7 @@ import MapKit
 /// This class helps reduce flickering and blank map behavior when zooming
 /// which is prevalent in MapKit's MKTileOverlayRenderer.
 public class CachingTileOverlayRenderer: MKOverlayRenderer {
-    private var loadingTiles = Set<String>()
+    private var loadingTiles = AtomicSet<String>()
 
     public init(overlay: any CachingTileOverlay) {
         super.init(overlay: overlay)
