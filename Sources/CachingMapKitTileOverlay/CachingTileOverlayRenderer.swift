@@ -8,7 +8,7 @@ import MapKit
 public class CachingTileOverlayRenderer: MKOverlayRenderer {
     private var loadingTiles = Set<String>()
 
-    init(overlay: any CachingTileOverlay) {
+    public init(overlay: any CachingTileOverlay) {
         super.init(overlay: overlay)
     }
 
