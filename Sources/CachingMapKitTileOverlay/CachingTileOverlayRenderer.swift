@@ -1,5 +1,11 @@
 import MapKit
 
+#if canImport(UIKit)
+    typealias ImageType = UIImage
+#elseif canImport(AppKit)
+    typealias ImageType = NSImage
+#endif
+
 /// A tile overlay renderer that uses a custom cache
 /// and supports overzooming fallback tiles as the user zooms in.
 ///
@@ -103,19 +109,10 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
         }
     }
 
-#if canImport(UIKit)
-    func drawImage(_ image: UIImage, in rect: CGRect, context: CGContext) {
-        UIGraphicsPushContext(context)
-
-        image.draw(in: rect)
-
-        UIGraphicsPopContext()
-    }
-
-    func cachedTileImage(for path: MKTileOverlayPath) -> UIImage? {
+    func cachedTileImage(for path: MKTileOverlayPath) -> ImageType? {
         guard let overlay = self.overlay as? CachingTileOverlay else { return nil }
         if let data = overlay.cachedData(at: path) {
-            return UIImage(data: data)
+            return ImageType(data: data)
         }
         return nil
     }
@@ -124,7 +121,7 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
     ///
     /// The idea is to try successively lower zoom levels until we find a tile we have cached,
     /// then use it (optionally scaling it up) until the real tile loads.
-    func fallbackTileImage(for path: MKTileOverlayPath) -> UIImage? {
+    func fallbackTileImage(for path: MKTileOverlayPath) -> ImageType? {
         var fallbackPath = path
         var d = 0
         while fallbackPath.z > 0 && d < 2 {
@@ -139,45 +136,23 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
         }
         return nil
     }
+
+    func drawImage(_ image: ImageType, in rect: CGRect, context: CGContext) {
+#if canImport(UIKit)
+        UIGraphicsPushContext(context)
+
+        image.draw(in: rect)
+
+        UIGraphicsPopContext()
 #elseif canImport(AppKit)
-    func drawImage(_ image: NSImage, in rect: CGRect, context: CGContext) {
         let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
 
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = graphicsContext
         image.draw(in: rect)
         NSGraphicsContext.restoreGraphicsState()
-
-    }
-
-    func cachedTileImage(for path: MKTileOverlayPath) -> NSImage? {
-        guard let overlay = self.overlay as? CachingTileOverlay else { return nil }
-        if let data = overlay.cachedData(at: path) {
-            return NSImage(data: data)
-        }
-        return nil
-    }
-
-    /// Attempts to get a fallback tile image from a lower zoom level.
-    ///
-    /// The idea is to try successively lower zoom levels until we find a tile we have cached,
-    /// then use it (optionally scaling it up) until the real tile loads.
-    func fallbackTileImage(for path: MKTileOverlayPath) -> NSImage? {
-        var fallbackPath = path
-        var d = 0
-        while fallbackPath.z > 0 && d < 2 {
-            d += 1
-            fallbackPath = fallbackPath.parent
-
-            if let image = cachedTileImage(for: fallbackPath) {
-                let srcRect = cropRect(d: d, originalPath: path, imageSize: image.size)
-
-                return image.cropped(to: srcRect)
-            }
-        }
-        return nil
-    }
 #endif
+    }
 }
 
 private func cropRect(d: Int, originalPath: MKTileOverlayPath, imageSize: CGSize) -> CGRect {
