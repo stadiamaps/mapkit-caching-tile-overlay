@@ -44,7 +44,7 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
                 let tileRect = MKMapRect(x: tileOriginX, y: tileOriginY, width: tileMapSize, height: tileMapSize)
 
                 // Create the tile overlay path
-                let tilePath = MKTileOverlayPath(x: x, y: y, z: currentZoom, contentScaleFactor: UIScreen.main.scale)
+                let tilePath = MKTileOverlayPath(x: x, y: y, z: currentZoom, contentScaleFactor: self.contentScaleFactor)
 
                 let drawRect = self.rect(for: tileRect)
 
@@ -69,14 +69,6 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
     //
     // Internal helpers
     //
-
-    func drawImage(_ image: UIImage, in rect: CGRect, context: CGContext) {
-        UIGraphicsPushContext(context)
-
-        image.draw(in: rect)
-
-        UIGraphicsPopContext()
-    }
 
     /// Approximates a zoom level from the current zoomScale.
     ///
@@ -111,6 +103,15 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
         }
     }
 
+#if canImport(UIKit)
+    func drawImage(_ image: UIImage, in rect: CGRect, context: CGContext) {
+        UIGraphicsPushContext(context)
+
+        image.draw(in: rect)
+
+        UIGraphicsPopContext()
+    }
+
     func cachedTileImage(for path: MKTileOverlayPath) -> UIImage? {
         guard let overlay = self.overlay as? CachingTileOverlay else { return nil }
         if let data = overlay.cachedData(at: path) {
@@ -128,27 +129,66 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
         var d = 0
         while fallbackPath.z > 0 && d < 2 {
             d += 1
+            fallbackPath = fallbackPath.parent
 
-            // Move one zoom level down.
-            fallbackPath.z -= 1
-            // Adjust x and y accordingly.
-            fallbackPath.x = fallbackPath.x % 2 == 0 ? (fallbackPath.x / 2) : ((fallbackPath.x - 1) / 2)
-            fallbackPath.y = fallbackPath.y % 2 == 0 ? (fallbackPath.y / 2) : ((fallbackPath.y - 1) / 2)
             if let image = cachedTileImage(for: fallbackPath) {
-                let factor = 1 << d
-                let remX = path.x % factor
-                let remY = path.y % factor
-
-                let subWidth = image.size.width / CGFloat(factor)
-                let subHeight = image.size.height / CGFloat(factor)
-                let srcRect = CGRect(x: CGFloat(remX) * subWidth,
-                                     y: CGFloat(remY) * subHeight,
-                                     width: subWidth,
-                                     height: subHeight)
+                let srcRect = cropRect(d: d, originalPath: path, imageSize: image.size)
 
                 return image.cropped(to: srcRect)
             }
         }
         return nil
     }
+#elseif canImport(AppKit)
+    func drawImage(_ image: NSImage, in rect: CGRect, context: CGContext) {
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = graphicsContext
+        image.draw(in: rect)
+        NSGraphicsContext.restoreGraphicsState()
+
+    }
+
+    func cachedTileImage(for path: MKTileOverlayPath) -> NSImage? {
+        guard let overlay = self.overlay as? CachingTileOverlay else { return nil }
+        if let data = overlay.cachedData(at: path) {
+            return NSImage(data: data)
+        }
+        return nil
+    }
+
+    /// Attempts to get a fallback tile image from a lower zoom level.
+    ///
+    /// The idea is to try successively lower zoom levels until we find a tile we have cached,
+    /// then use it (optionally scaling it up) until the real tile loads.
+    func fallbackTileImage(for path: MKTileOverlayPath) -> NSImage? {
+        var fallbackPath = path
+        var d = 0
+        while fallbackPath.z > 0 && d < 2 {
+            d += 1
+            fallbackPath = fallbackPath.parent
+
+            if let image = cachedTileImage(for: fallbackPath) {
+                let srcRect = cropRect(d: d, originalPath: path, imageSize: image.size)
+
+                return image.cropped(to: srcRect)
+            }
+        }
+        return nil
+    }
+#endif
+}
+
+private func cropRect(d: Int, originalPath: MKTileOverlayPath, imageSize: CGSize) -> CGRect {
+    let factor = 1 << d
+    let remX = originalPath.x % factor
+    let remY = originalPath.y % factor
+
+    let subWidth = imageSize.width / CGFloat(factor)
+    let subHeight = imageSize.height / CGFloat(factor)
+    return CGRect(x: CGFloat(remX) * subWidth,
+                  y: CGFloat(remY) * subHeight,
+                  width: subWidth,
+                  height: subHeight)
 }
