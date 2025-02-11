@@ -1,9 +1,9 @@
 import MapKit
 
 #if canImport(UIKit)
-    typealias ImageType = UIImage
+typealias ImageType = UIImage
 #elseif canImport(AppKit)
-    typealias ImageType = NSImage
+typealias ImageType = NSImage
 #endif
 
 /// A tile overlay renderer that uses a custom cache
@@ -63,7 +63,6 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
 
                     // Then, load the tile from the cache (if necessary)
                     loadTileIfNeeded(for: tilePath, in: tileRect)
-
                 } else {
                     // Total cache miss; load the tile
                     loadTileIfNeeded(for: tilePath, in: tileRect)
@@ -120,7 +119,7 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
     /// Attempts to get a fallback tile image from a lower zoom level.
     ///
     /// The idea is to try successively lower zoom levels until we find a tile we have cached,
-    /// then use it (optionally scaling it up) until the real tile loads.
+    /// then use it until the real tile loads.
     func fallbackTileImage(for path: MKTileOverlayPath) -> ImageType? {
         var fallbackPath = path
         var d = 0

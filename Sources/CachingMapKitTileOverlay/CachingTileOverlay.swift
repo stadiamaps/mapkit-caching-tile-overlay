@@ -5,7 +5,7 @@ import MapKit
 ///
 /// This is useful for making overlays more responsive, and allowing for fallback tiles
 /// to be fetched by the renderer while waiting for the higher zoom tiles to load over the network.
-/// While technically not required, it's probably helpful to implement this by subclassing `MKTileOverlay`.
+/// While technically not required, it's easiest to just sublcass `MKTileOverlay`.
 public protocol CachingTileOverlay: MKOverlay {
     /// Fetches a tile from the cache, if present.
     ///

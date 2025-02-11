@@ -21,9 +21,6 @@ extension NSImage {
     /// The cropRect is assumed to be defined in a UIKit-style coordinate system (origin at top‑left).
     func cropped(to cropRect: CGRect) -> NSImage? {
         return NSImage(size: cropRect.size, flipped: true, drawingHandler: { bounds in
-            // We want to draw self such that the region starting at cropRect.origin is drawn at (0,0)
-            // in the new image. With a flipped context (origin at top-left) this is achieved by drawing
-            // self in a rect offset by -cropRect.origin.
             let drawingRect = NSRect(
                 x: -cropRect.origin.x,
                 y: -cropRect.origin.y,
