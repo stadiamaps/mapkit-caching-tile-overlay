@@ -58,7 +58,7 @@ extension StadiaMapsOverlay: CachingTileOverlay {
 }
 ```
 
-You can use this with your `MKMapView` like so:
+You can use this with your `MKMapView` like so (iOS example, but it works on several other platforms too):
 
 ```swift
 import UIKit
@@ -91,8 +91,13 @@ extension ViewController: MKMapViewDelegate {
 
 ## Topics
 
-- ``CachingTileOverlay``
+### Classes
+
 - ``CachingTileOverlayRenderer``
+
+### Protocols
+
+- ``CachingTileOverlay``
 
 ## See also
 

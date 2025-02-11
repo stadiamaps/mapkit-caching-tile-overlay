@@ -1,6 +1,6 @@
 import Foundation
 
-public class AtomicSet<Value: Hashable>: CustomDebugStringConvertible {
+class AtomicSet<Value: Hashable>: CustomDebugStringConvertible {
     private var storage = Set<Value>()
 
     private let queue = DispatchQueue(label: "com.donnywals.\(UUID().uuidString)",
