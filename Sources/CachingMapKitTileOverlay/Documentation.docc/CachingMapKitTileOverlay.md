@@ -2,11 +2,25 @@
 
 A MapKit overlay renderer and associated protocol
 that addresses bugs and shortcomings of `MKTileOverlayRenderer`.
+
+## Overview
+
 If you're having issues with your tile overlays flickering,
 or wish they would overzoom existing tiles while loading instead of showing a blank,
 you're in the right place!
 
-## Overview
+This package helps you build higher quality MapKit experiences with raster overlays.
+Overlays rendering in MapKit requires an averlay class and a renderer.
+
+``CachingMapKitTileOverlay`` is a protocol for tile overlays that implement caching.
+It's almost a drop-in replacement for `MKTileOverlay`;
+you just need to add a method to facilitate cache retrieval.
+
+``CachingTileOverlayRenderer`` is a slightly smarter,
+cache-aware renderer that fixes some of the bugs in `MKTileOverlayRenderer`,
+while enabling fallback to cached tiles during loading (instead of a blank patch).
+
+## Example implementation
 
 Here's an example of a custom overlay:
 
