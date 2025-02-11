@@ -17,24 +17,27 @@ extension UIImage {
 import AppKit
 
 extension NSImage {
-    /// Returns a new image by cropping to the specified rect (in the image’s coordinate space).
-    ///
-    /// NOTE: This assumes UIKit coordinates.
-    func cropped(to rect: CGRect) -> NSImage? {
-        // Create a new image with the desired cropped size.
-        let newImage = NSImage(size: rect.size, flipped: true) { rect in
-            let drawPoint = CGPoint(x: -rect.origin.x, y: -rect.origin.y)
-            self.draw(
-                at: drawPoint,
-                from: NSRect(origin: .zero, size: self.size),
-                operation: .copy,
-                fraction: 1.0
+    /// Returns a new image by cropping self to the specified rect.
+    /// The cropRect is assumed to be defined in a UIKit-style coordinate system (origin at top‑left).
+    func cropped(to cropRect: CGRect) -> NSImage? {
+        return NSImage(size: cropRect.size, flipped: true, drawingHandler: { bounds in
+            // We want to draw self such that the region starting at cropRect.origin is drawn at (0,0)
+            // in the new image. With a flipped context (origin at top-left) this is achieved by drawing
+            // self in a rect offset by -cropRect.origin.
+            let drawingRect = NSRect(
+                x: -cropRect.origin.x,
+                y: -cropRect.origin.y,
+                width: self.size.width,
+                height: self.size.height
             )
-
+            self.draw(in: drawingRect,
+                      from: NSRect(origin: .zero, size: self.size),
+                      operation: .copy,
+                      fraction: 1.0,
+                      respectFlipped: true,
+                      hints: nil)
             return true
-        }
-
-        return newImage
+        })
     }
 }
 #endif
