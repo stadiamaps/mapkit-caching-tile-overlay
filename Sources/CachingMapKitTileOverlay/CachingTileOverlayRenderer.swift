@@ -96,15 +96,13 @@ public class CachingTileOverlayRenderer: MKOverlayRenderer {
         guard !loadingTiles.contains(tileKey) else { return }
 
         loadingTiles.insert(tileKey)
-
-        overlay.loadTile(at: path) { [weak self] data, error in
-            guard let self = self else { return }
-            self.loadingTiles.remove(tileKey)
-
+        
+        Task { [weak self] in
+            _ = try? await overlay.loadTile(at: path)
+            self?.loadingTiles.remove(tileKey)
+            
             // When the tile has loaded, schedule a redraw of the tile region.
-            DispatchQueue.main.async {
-                self.setNeedsDisplay(tileMapRect)
-            }
+            self?.setNeedsDisplay(tileMapRect)
         }
     }
 
