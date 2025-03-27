@@ -3,6 +3,10 @@
 
 import PackageDescription
 
+let settings: [SwiftSetting] = [
+    .enableExperimentalFeature("StrictConcurrency")
+]
+
 let package = Package(
     name: "CachingMapKitTileOverlay",
     platforms: [
@@ -22,10 +26,13 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "CachingMapKitTileOverlay"),
+            name: "CachingMapKitTileOverlay",
+            swiftSettings: settings
+        ),
         .testTarget(
             name: "CachingMapKitTileOverlayTests",
-            dependencies: ["CachingMapKitTileOverlay"]
+            dependencies: ["CachingMapKitTileOverlay"],
+            swiftSettings: settings
         ),
     ]
 )
