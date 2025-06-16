@@ -11,7 +11,7 @@ public protocol CachingTileOverlay: MKOverlay {
     ///
     /// This method should retorn as quickly as possible.
     func cachedData(at path: MKTileOverlayPath) -> Data?
-    func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, (any Error)?) -> Void)
+    func loadTile(at path: MKTileOverlayPath) async throws -> Data
 
     var tileSize: CGSize { get }
 }
